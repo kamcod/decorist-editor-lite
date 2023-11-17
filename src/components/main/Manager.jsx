@@ -1,5 +1,6 @@
 import {useEffect, useState} from "react";
 import { fabric } from "fabric";
+import { FormattedMessage } from "react-intl";
 // import {setCanvas, setActiveObject} from "../../store/editor/editorSlice";
 // import {useDispatch, useSelector} from "react-redux";
 
@@ -42,8 +43,8 @@ export default function Manager(){
             targetFindTolerance: 10,
             selection: true,
             preserveObjectStacking: true,
-            height: 600,
-            width: 1200,
+            height: window.innerHeight * 0.5,
+            width: window.innerWidth/2 * 0.8,
             backgroundColor: "white",
         });
 
@@ -73,9 +74,17 @@ export default function Manager(){
 
     return (
         <>
-            <div className="manager-wrapper grow relative" id="canvas-wrapper">
-                <div className="canvas-container flex justify-center py-10">
-                    <canvas  id="editor-canvas" />
+            <div className="py-10" id="canvas-wrapper">
+                <div className="border-4 border-black rounded-2xl canvas-container flex flex-col justify-center py-10">
+                    <canvas id="editor-canvas" />
+                    <div className="flex justify-center items-center" style={{transform: 'translateY(75px)'}}>
+                        <div
+                            className="flex justify-center items-center rounded"
+                            style={{backgroundColor: "#71CFBC", width: "308px", height: "67px"}}
+                        >
+                            <FormattedMessage id="budget" />: $3000
+                        </div>
+                    </div>
                 </div>
             </div>
         </>

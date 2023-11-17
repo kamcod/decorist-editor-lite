@@ -1,11 +1,11 @@
 import Header from "../main/Header";
-import Manager from "../main/Manager";
+import Home from "../main/Home";
 
 export default function Layout(){
     return (
         <>
             <Header />
-            <Manager />
+            <Home />
         </>
     )
 }

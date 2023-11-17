@@ -2,11 +2,15 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
+import {IntlProvider} from 'react-intl';
+import languages from "./intl/languages";
 // import reportWebVitals from './reportWebVitals';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
-    <App />
+    <IntlProvider messages={languages.en} locale="en" defaultLocale="arabic">
+        <App />
+    </IntlProvider>
 );
 
 // If you want to start measuring performance in your app, pass a function
