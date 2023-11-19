@@ -1,10 +1,9 @@
 const languages = {
     en: {
-        getYourDesign: "Get Your Design Now",
+        getYourDesign: "Get Your Design in a Second",
         budget: "Budget",
     },
     arabic: {
-        getYourDesign: "احصل على تصميمك الآن",
         budget: "ميزانية",
     }
 };

@@ -1,0 +1,12 @@
+.mood-board-editor-lite .home-inputs-dropdown {
+    padding: 12px 15px;
+    border: 2.5px solid black;
+    border-radius: 5px;
+    min-width: 180px;
+}
+.mood-board-editor-lite .generate-btn {
+    /*padding: 8px 15px;*/
+    border-radius: 5px;
+    background-color: #313149;
+    color: white;
+}

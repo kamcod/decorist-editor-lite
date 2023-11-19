@@ -38,21 +38,21 @@ export default function Header () {
                 </div>
                 <ul>
                     {/*className={selected === 'home' ? classes.active : ""}*/}
-                    <li onClick={()=> changeContentTo('home')}>
-                        <span>Home</span>
-                    </li>
-                    <li  onClick={()=> changeContentTo('about')}>
-                        <span>About</span>
-                    </li>
-                    <li  onClick={()=> changeContentTo('experience')}>
-                        <span>Experience</span>
-                    </li>
-                    <li onClick={()=> changeContentTo('portfolio')}>
-                        <span>Portfolio</span>
-                    </li>
-                    <li onClick={()=> changeContentTo('contact')}>
-                        <span>Contact</span>
-                    </li>
+                    {/*<li onClick={()=> changeContentTo('home')}>*/}
+                    {/*    <span>Home</span>*/}
+                    {/*</li>*/}
+                    {/*<li  onClick={()=> changeContentTo('about')}>*/}
+                    {/*    <span>About</span>*/}
+                    {/*</li>*/}
+                    {/*<li  onClick={()=> changeContentTo('experience')}>*/}
+                    {/*    <span>Experience</span>*/}
+                    {/*</li>*/}
+                    {/*<li onClick={()=> changeContentTo('portfolio')}>*/}
+                    {/*    <span>Portfolio</span>*/}
+                    {/*</li>*/}
+                    {/*<li onClick={()=> changeContentTo('contact')}>*/}
+                    {/*    <span>Contact</span>*/}
+                    {/*</li>*/}
                 </ul>
             </nav>
         </>
