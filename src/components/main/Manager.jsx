@@ -6,12 +6,89 @@ import shareIcon from "../../assets/icons/arrow-share.svg";
 import bookmarkIcon from "../../assets/icons/bookmark.svg";
 import cartIcon from "../../assets/icons/cart.svg";
 
+import moodBoardData from "../../data";
+
 import { FormattedMessage } from "react-intl";
 // import {setCanvas, setActiveObject} from "../../store/editor/editorSlice";
 // import {useDispatch, useSelector} from "react-redux";
 
 export default function Manager(){
     // const dispatch = useDispatch();
+    const [designData, setDesignData] = useState([]);
+    const [selectedDesignData, setSelectedDesignData] = useState();
+
+    useEffect(() => {
+        setTimeout(() => {
+            setDesignData(moodBoardData);
+            setSelectedDesignData(moodBoardData[0]);
+        }, [3000])
+    }, []);
+
+
+    const getScaleAndPosition = (img, activeObj) => {
+        const placeHolderStroke = 1;
+        const { width, height, scaleX, scaleY, left, top } = activeObj;
+        const placeHolderWidth = width * scaleX;
+        const placeHolderHeight = height * scaleY;
+        const {width: imgWidth, height: imgHeight} = img;
+        const scaleToWidth = (placeHolderWidth - placeHolderStroke)/imgWidth;
+        const scaleToHeight = (placeHolderHeight - placeHolderStroke)/imgHeight;
+        let scale = scaleToWidth*imgHeight <= (placeHolderHeight - placeHolderStroke) ? scaleToWidth : scaleToHeight;
+        return {
+            scale,
+            left: left + placeHolderStroke,
+            top: top + placeHolderStroke
+        };
+    };
+
+    useEffect(() => {
+        if(window.canvas){
+            const canvas = window.canvas;
+            canvas.getObjects()?.forEach(e => canvas.remove(e));
+            selectedDesignData.placeHolders.forEach(({id, left, top, width, height, items}) => {
+                let rect = new fabric.Rect({
+                    id,
+                    left,
+                    top,
+                    // fill: '#beeedc',
+                    width,
+                    height,
+                    // stroke: 1,
+                    // cornerStrokeColor: '#71CFBC',
+                    custom: {
+                        category: ""
+                    },
+                    image: items[0].image
+                });
+                // canvas.add(rect);
+
+                const imgObj = new Image();
+                imgObj.src = items[0].image;
+
+                imgObj.onload = function () {
+                    const image = new fabric.Image(imgObj);
+                    const { scale, left: l, top: t } = getScaleAndPosition(image, rect);
+                    image.scale(scale);
+                    image.set({
+                        placeholderID: id,
+                        left: l,
+                        top: t,
+                        selectable: false
+                    });
+                    canvas.add(image);
+                    // let sel = new fabric.ActiveSelection([rect, image], {
+                    //     canvas,
+                    // });
+                    // sel.toGroup();
+                    // sel.set({
+                    //     selectable: false
+                    // })
+                    canvas.discardActiveObject();
+                    canvas.renderAll();
+                };
+            })
+        }
+    }, [selectedDesignData])
 
     const selectionCreated = (e) => {
         let canvasObject = e.selected[0];
@@ -49,8 +126,8 @@ export default function Manager(){
             targetFindTolerance: 10,
             selection: true,
             preserveObjectStacking: true,
-            height: window.innerHeight * 0.45,
-            width: window.innerWidth/2 * 0.8,
+            height: window.innerHeight * 0.6,
+            width: window.innerWidth/2 * 0.955,
             backgroundColor: "white",
         });
 
@@ -78,10 +155,28 @@ export default function Manager(){
         initializeFabricCanvas()
     },[]);
 
+    const previousDesign = () => {
+        const index = designData.indexOf(selectedDesignData);
+        if(index === 0){
+            setSelectedDesignData(designData[designData.length-1])
+        } else {
+            setSelectedDesignData(designData[index - 1])
+        }
+    }
+
+    const nextDesign = () => {
+        const index = designData.indexOf(selectedDesignData);
+        if(index === designData.length-1){
+            setSelectedDesignData(designData[0])
+        } else {
+            setSelectedDesignData(designData[index + 1])
+        }
+    }
+
     return (
         <>
             <div className="pt-5" id="canvas-wrapper">
-                <div className="border-4 border-black rounded-2xl canvas-container flex flex-col justify-center py-10">
+                <div className="border-4 border-black rounded-2xl canvas-container flex flex-col justify-center overflow-hidden">
                     <canvas id="editor-canvas" />
                     {/*<div className="flex justify-center items-center" style={{transform: 'translateY(75px)'}}>*/}
                     {/*    <div*/}
@@ -108,8 +203,12 @@ export default function Manager(){
                         </button>
                     </div>
                     <div className="grow"></div>
-                    <button className="generate-btn py-2 px-5">Previous</button>
-                    <button className="generate-btn py-2 px-8">Next</button>
+                    <button className="generate-btn py-2 px-5" onClick={previousDesign}>
+                        Previous
+                    </button>
+                    <button className="generate-btn py-2 px-8" onClick={nextDesign}>
+                        Next
+                    </button>
                 </div>
                 <div className="generate-btn p-2 flex items-center justify-between">
                     <div>5,600 SAR</div>

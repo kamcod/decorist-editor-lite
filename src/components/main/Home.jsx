@@ -1,8 +1,26 @@
-import Manager from "./Manager";
+// import Manager from "./Manager";
+import Manager from "./Manager2";
 import titleBack from "../../assets/images/titleBack.svg";
 import {FormattedMessage} from "react-intl";
+import axios from "axios";
+import {EndPoints} from "../../Config/EndPoints";
+import {useState} from "react";
 
 export default function Home(){
+    const [style, setStyle] = useState("bohemian");
+    const [color, setColor] = useState("1");
+
+    const handleStyleChange = (e) => {
+        setStyle(e.target.value);
+    }
+    const generateArtwork = () => {
+        axios.post(`${EndPoints.generateArtwork}?style=${style}&color=${color}&user_id=1`)
+            .then(res => {
+                console.log('response....', res);
+            })
+            .catch(err => console.log(err))
+    }
+
     return (
         <>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-5">
@@ -13,10 +31,10 @@ export default function Home(){
                             <FormattedMessage id="getYourDesign" />
                         </div>
                         <div className="flex gap-5 justify-between py-10">
-                            <select className="home-inputs-dropdown">
-                                <option>Style</option>
-                                <option>Style1</option>
-                                <option>Style2</option>
+                            <select className="home-inputs-dropdown" onClick={handleStyleChange}>
+                                <option value="bohemian">Bohemian</option>
+                                <option value="Scandinavian">Scandinavian</option>
+                                <option value="new classic">New Classic</option>
                             </select>
                             <select className="home-inputs-dropdown">
                                 <option>Room</option>
@@ -30,14 +48,19 @@ export default function Home(){
                                 <option>Budget1</option>
                                 <option>Budget1</option>
                             </select>
-                            <select className="home-inputs-dropdown">
-                                <option>Color Palette</option>
-                                <option>Color1</option>
-                                <option>Color2</option>
+                            <select className="home-inputs-dropdown" onChange={(e) => setColor(e.target.value)}>
+                                <option value="1">Color 1</option>
+                                <option value="2">Color 2</option>
+                                <option value="4">Color 4</option>
+                                <option value="5">Color 5</option>
                             </select>
                         </div>
                         <div className="py-16 w-1/2">
-                            <button className="generate-btn w-full py-4">Generate</button>
+                            <button className="generate-btn w-full py-4"
+                            onClick={generateArtwork}
+                            >
+                                Generate
+                            </button>
                         </div>
                     </div>
                 </div>
