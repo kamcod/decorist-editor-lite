@@ -4,7 +4,7 @@ import titleBack from "../../assets/images/titleBack.svg";
 import {FormattedMessage} from "react-intl";
 import axios from "axios";
 import {EndPoints} from "../../Config/EndPoints";
-import {useState} from "react";
+import {useState, useEffect} from "react";
 
 export default function Home(){
     const [style, setStyle] = useState("bohemian");
@@ -14,12 +14,21 @@ export default function Home(){
         setStyle(e.target.value);
     }
     const generateArtwork = () => {
-        axios.post(`${EndPoints.generateArtwork}?style=${style}&color=${color}&user_id=1`)
+        axios.get(`${EndPoints.generateArtwork}?style=${style}&color=${color}&user_id=1`)
             .then(res => {
                 console.log('response....', res);
             })
             .catch(err => console.log(err))
     }
+
+    useEffect(() => {
+
+        axios.post(`${EndPoints.getTemplates}`)
+            .then(res => {
+                console.log('response....templates', res);
+            })
+            .catch(err => console.log(err))
+    }, []);
 
     return (
         <>

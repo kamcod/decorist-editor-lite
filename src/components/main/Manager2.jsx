@@ -7,70 +7,6 @@ import cartIcon from "../../assets/icons/cart.svg";
 
 import moodBoardData from "../../data";
 
-const DATA = [
-    [
-        [
-            {
-                "chair_image": "https://www.westelm.com.sa/assets/VariantProductImages/129466664/129466664_sku_hero_image_url.jpg",
-                "chair_price": "5,850.00",
-                "chair_trend_factor": 10,
-                "coffee_table_image": "https://www.westelm.com.sa/assets/VariantProductImages/PW4736656/202316_0257_img47z.jpg",
-                "coffee_table_price": "2,850.00",
-                "coffee_table_trend_factor": 10,
-                "moodboard_id": 54,
-                "sofa_image": "https://www.westelm.com.sa/assets/VariantProductImages/130957614/130957614_v1_sku_hero_image_url.jpg",
-                "sofa_price": "15,400.00",
-                "sofa_trend_factor": 10
-            },
-            {
-                "chair_image": "https://www.westelm.com.sa/assets/VariantProductImages/PW4711958/202316_0182_img54z.jpg",
-                "chair_price": "2,375.00",
-                "chair_trend_factor": 10,
-                "coffee_table_image": "https://www.westelm.com.sa/assets/VariantProductImages/PW3588927/202248_0125_img8z.jpg",
-                "coffee_table_price": "2,075.00",
-                "coffee_table_trend_factor": 10,
-                "moodboard_id": 28,
-                "sofa_image": "https://www.westelm.com.sa/assets/VariantProductImages/PW2684499/202134_0056_img76z.jpg",
-                "sofa_price": "16,100.00",
-                "sofa_trend_factor": 10
-            },
-        ],
-        {
-            "theme": 2.0
-        }
-    ],
-    [
-        [
-            {
-                "chair_image": "https://www.westelm.com.sa/assets/VariantProductImages/129386533/202152_0201_img51z.jpg",
-                "chair_price": "4,375.00",
-                "chair_trend_factor": 10,
-                "coffee_table_image": "https://www.westelm.com.sa/assets/VariantProductImages/PW4736656/202316_0257_img47z.jpg",
-                "coffee_table_price": "2,850.00",
-                "coffee_table_trend_factor": 10,
-                "moodboard_id": 108,
-                "sofa_image": "https://www.westelm.com.sa/assets/VariantProductImages/PW5942664/202308_0265_img63z.jpg",
-                "sofa_price": "15,100.00",
-                "sofa_trend_factor": 10
-            },
-            {
-                "chair_image": "https://www.westelm.com.sa/assets/VariantProductImages/129386533/202152_0201_img51z.jpg",
-                "chair_price": "4,375.00",
-                "chair_trend_factor": 10,
-                "coffee_table_image": "https://www.westelm.com.sa/assets/VariantProductImages/PW2637657/202316_0148_img3z.jpg",
-                "coffee_table_price": "2,625.00",
-                "coffee_table_trend_factor": 10,
-                "moodboard_id": 104,
-                "sofa_image": "https://www.westelm.com.sa/assets/VariantProductImages/PW5700097/202130_0469_img1z.jpg",
-                "sofa_price": "16,100.00",
-                "sofa_trend_factor": 10
-            },
-        ],
-        {
-            "theme": 6.0
-        }
-    ]
-];
 // import {fabric} from "fabric";
 
 export default function Manager(){
@@ -126,6 +62,12 @@ export default function Manager(){
     };
 
     const handleSelectedDesign = async (data) => {
+        let actualData = data[0];
+
+
+
+
+
         let newData = [];
         if(data?.placeHolders){
             for(let i=0;i<data.placeHolders.length;i++){
@@ -175,11 +117,11 @@ export default function Manager(){
     }
 
     const toggleSwapPanel = (index) => {
-        if(index === undefined || showSwapPanel === index){
-            setShowSwapPanel(null);
-            return;
-        }
-        setShowSwapPanel(index)
+        // if(index === undefined || showSwapPanel === index){
+        //     setShowSwapPanel(null);
+        //     return;
+        // }
+        // setShowSwapPanel(index)
     }
 
     const swapImage = (src, index) => {
