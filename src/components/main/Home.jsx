@@ -9,6 +9,7 @@ import {useState, useEffect} from "react";
 export default function Home(){
     const [style, setStyle] = useState("bohemian");
     const [color, setColor] = useState("1");
+    const [designData, setDesignData] = useState([]);
 
     const handleStyleChange = (e) => {
         setStyle(e.target.value);
@@ -16,19 +17,10 @@ export default function Home(){
     const generateArtwork = () => {
         axios.get(`${EndPoints.generateArtwork}?style=${style}&color=${color}&user_id=1`)
             .then(res => {
-                console.log('response....', res);
+                setDesignData(res.data);
             })
             .catch(err => console.log(err))
     }
-
-    useEffect(() => {
-
-        axios.post(`${EndPoints.getTemplates}`)
-            .then(res => {
-                console.log('response....templates', res);
-            })
-            .catch(err => console.log(err))
-    }, []);
 
     return (
         <>
@@ -74,7 +66,9 @@ export default function Home(){
                     </div>
                 </div>
 
-                <Manager />
+                <Manager
+                    designData={designData}
+                />
             </div>
         </>
     )

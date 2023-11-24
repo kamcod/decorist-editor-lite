@@ -9,17 +9,10 @@ import moodBoardData from "../../data";
 
 // import {fabric} from "fabric";
 
-export default function Manager(){
+export default function Manager( { designData }){
     // const dispatch = useDispatch();
-    const [designData, setDesignData] = useState([]);
     const [selectedDesignData, setSelectedDesignData] = useState({});
     const [showSwapPanel, setShowSwapPanel] = useState();
-
-    useEffect(() => {
-        setTimeout(() => {
-            setDesignData(moodBoardData);
-        }, [3000])
-    }, []);
 
 
     const getImageDimensions = (src) => {
@@ -63,6 +56,8 @@ export default function Manager(){
 
     const handleSelectedDesign = async (data) => {
         let actualData = data[0];
+        const generatedData = actualData[0];
+        const adminData = actualData[1];
 
 
 
@@ -95,7 +90,9 @@ export default function Manager(){
     };
 
     useEffect(() => {
-        handleSelectedDesign(designData[0]);
+        if(designData.length > 0){
+            handleSelectedDesign(designData[0]);
+        }
     }, [designData])
 
     const previousDesign = () => {
