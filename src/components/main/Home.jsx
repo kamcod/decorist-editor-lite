@@ -1,23 +1,30 @@
 // import Manager from "./Manager";
-import Manager from "./Manager2";
+import Manager from "./Manager";
 import titleBack from "../../assets/images/titleBack.svg";
 import {FormattedMessage} from "react-intl";
 import axios from "axios";
 import {EndPoints} from "../../Config/EndPoints";
 import {useState, useEffect} from "react";
+import ButtonLoader from "../common/ButtonLoader";
 
 export default function Home(){
+    const [loadingGeneratorBtn, setLoadingGeneratorBtn] = useState(false);
     const [style, setStyle] = useState("bohemian");
     const [color, setColor] = useState("1");
-    const [designData, setDesignData] = useState([]);
+    const [layouts, setLayouts] = useState([]);
+    const [moodBoards, setMoodBoards] = useState([]);
 
     const handleStyleChange = (e) => {
         setStyle(e.target.value);
     }
     const generateArtwork = () => {
+        setLoadingGeneratorBtn(true);
         axios.get(`${EndPoints.generateArtwork}?style=${style}&color=${color}&user_id=1`)
             .then(res => {
-                setDesignData(res.data);
+                setLoadingGeneratorBtn(false);
+                const { layout, moodboards } = res.data;
+                setLayouts(layout);
+                setMoodBoards(moodboards);
             })
             .catch(err => console.log(err))
     }
@@ -57,17 +64,18 @@ export default function Home(){
                             </select>
                         </div>
                         <div className="py-16 w-1/2">
-                            <button className="generate-btn w-full py-4"
+                            <button className="generate-btn w-full py-4 bg-indigo-500"
                             onClick={generateArtwork}
                             >
-                                Generate
+                                {loadingGeneratorBtn ? <ButtonLoader text="Generating..." /> : "Generate"}
                             </button>
                         </div>
                     </div>
                 </div>
 
                 <Manager
-                    designData={designData}
+                    layouts={layouts}
+                    moodBoards={moodBoards}
                 />
             </div>
         </>

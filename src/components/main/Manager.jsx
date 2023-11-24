@@ -1,5 +1,4 @@
 import {useEffect, useState} from "react";
-import { fabric } from "fabric";
 import dislikeIcon from "../../assets/icons/dislike.svg";
 import heartIcon from "../../assets/icons/heart.svg";
 import shareIcon from "../../assets/icons/arrow-share.svg";
@@ -8,176 +7,169 @@ import cartIcon from "../../assets/icons/cart.svg";
 
 import moodBoardData from "../../data";
 
-import { FormattedMessage } from "react-intl";
-// import {setCanvas, setActiveObject} from "../../store/editor/editorSlice";
-// import {useDispatch, useSelector} from "react-redux";
+// import {fabric} from "fabric";
 
-export default function Manager(){
+export default function Manager( { layouts, moodBoards }){
     // const dispatch = useDispatch();
-    const [designData, setDesignData] = useState([]);
-    const [selectedDesignData, setSelectedDesignData] = useState();
-
-    useEffect(() => {
-        setTimeout(() => {
-            setDesignData(moodBoardData);
-            setSelectedDesignData(moodBoardData[0]);
-        }, [3000])
-    }, []);
+    const [selectedDesignData, setSelectedDesignData] = useState({});
+    const [showSwapPanel, setShowSwapPanel] = useState();
+    const [budget, setBudget] = useState("");
+    const [currencyUnit, setCurrencyUnit] = useState("");
 
 
-    const getScaleAndPosition = (img, activeObj) => {
-        const placeHolderStroke = 1;
-        const { width, height, scaleX, scaleY, left, top } = activeObj;
-        const placeHolderWidth = width * scaleX;
-        const placeHolderHeight = height * scaleY;
-        const {width: imgWidth, height: imgHeight} = img;
-        const scaleToWidth = (placeHolderWidth - placeHolderStroke)/imgWidth;
-        const scaleToHeight = (placeHolderHeight - placeHolderStroke)/imgHeight;
-        let scale = scaleToWidth*imgHeight <= (placeHolderHeight - placeHolderStroke) ? scaleToWidth : scaleToHeight;
-        return {
-            scale,
-            left: left + placeHolderStroke,
-            top: top + placeHolderStroke
+    const getImageDimensions = (src) => {
+        let data;
+        const imgObj = new Image();
+        imgObj.src = src;
+
+        imgObj.onload = function () {
+            data = { width: imgObj.width, height: imgObj.height}
         };
+        return data;
+    }
+    const getScaleAndPosition = ( data, imgUrl) => {
+        const placeHolderStroke = 1;
+        const { width, height, left, top } = data;
+        const placeHolderWidth = width;
+        const placeHolderHeight = height;
+        return new Promise((resolve, reject) => {
+            const imgObj = new Image();
+            imgObj.src = imgUrl;
+
+            imgObj.onload = function () {
+                data = { width: imgObj.width, height: imgObj.height}
+                const imgWidth = imgObj.width, imgHeight = imgObj.height;
+                const scaleToWidth = (placeHolderWidth - placeHolderStroke)/imgWidth;
+                const scaleToHeight = (placeHolderHeight - placeHolderStroke)/imgHeight;
+                let scale = scaleToWidth*imgHeight <= (placeHolderHeight - placeHolderStroke) ? scaleToWidth : scaleToHeight;
+                // if(value === 'width') return (scale * imgWidth).toString();
+                // if(value === 'height') return (scale * imgHeight).toString();
+                resolve({
+                    scale,
+                    left: left + placeHolderStroke,
+                    top: top + placeHolderStroke,
+                    width: (scale * imgWidth).toString(),
+                    height: (scale * imgHeight).toString()
+                })
+            };
+        })
+    };
+
+    const handleSelectedDesign = async (data) => {
+        const { Items, moodboard_Template_ID, moodboard_id, total_price, currency } = data;
+        setBudget(total_price);
+        setCurrencyUnit(currency || "SAR");
+        const matchLayout = layouts.find(e => e.moodboard_Template_ID === moodboard_Template_ID);
+        const {items, mood_board_canvas} = matchLayout;
+        console.log('width/height', mood_board_canvas.width, mood_board_canvas.height);
+        const widthRatio = (window.innerWidth/2 * 0.955) / mood_board_canvas.width;
+        const heightRatio = (window.innerHeight * 0.6) / mood_board_canvas.height;
+
+
+        let newData = [];
+
+        for(let i=0;i<Items.length;i++){
+            // TODO: change this later
+            const ImageURL = "https://i.ibb.co/FsYTcCR/ccb16d0c012ed5f4-2602-w358-h358-b1-p0.png";
+            // const { category, ImageURL } = Items[i];
+            const { category } = Items[i];
+            const matchedData = items.find(e => e.category.toLowerCase() === category.toLowerCase())
+            const { left, top } = matchedData;
+            const {width, height} = await getScaleAndPosition(matchedData, ImageURL);
+            let obj = {
+                width: width * widthRatio,
+                height: height * heightRatio,
+                left: left * widthRatio,
+                top: top * heightRatio,
+                src: ImageURL,
+            };
+            newData.push(obj);
+        };
+
+        setSelectedDesignData({
+            id: moodboard_id,
+            items: newData
+        })
     };
 
     useEffect(() => {
-        if(window.canvas){
-            const canvas = window.canvas;
-            canvas.getObjects()?.forEach(e => canvas.remove(e));
-            selectedDesignData.placeHolders.forEach(({id, left, top, width, height, items}) => {
-                let rect = new fabric.Rect({
-                    id,
-                    left,
-                    top,
-                    // fill: '#beeedc',
-                    width,
-                    height,
-                    // stroke: 1,
-                    // cornerStrokeColor: '#71CFBC',
-                    custom: {
-                        category: ""
-                    },
-                    image: items[0].image
-                });
-                // canvas.add(rect);
-
-                const imgObj = new Image();
-                imgObj.src = items[0].image;
-
-                imgObj.onload = function () {
-                    const image = new fabric.Image(imgObj);
-                    const { scale, left: l, top: t } = getScaleAndPosition(image, rect);
-                    image.scale(scale);
-                    image.set({
-                        placeholderID: id,
-                        left: l,
-                        top: t,
-                        selectable: false
-                    });
-                    canvas.add(image);
-                    // let sel = new fabric.ActiveSelection([rect, image], {
-                    //     canvas,
-                    // });
-                    // sel.toGroup();
-                    // sel.set({
-                    //     selectable: false
-                    // })
-                    canvas.discardActiveObject();
-                    canvas.renderAll();
-                };
-            })
+        if(moodBoards.length > 0){
+            handleSelectedDesign(moodBoards[0]);
         }
-    }, [selectedDesignData])
-
-    const selectionCreated = (e) => {
-        let canvasObject = e.selected[0];
-        // dispatch(setActiveObject(canvasObject));
-    };
-    const selectionUpdated = (e) => {
-        let canvasObject = e.selected[0];
-        // dispatch(setActiveObject(canvasObject));
-    };
-    const selectionCleared = () => {
-        // dispatch(setActiveObject(null));
-    };
-
-    const initEvents = (canvas) => {
-        canvas.on({
-            // 'object:modified': modifiedObject,
-            "selection:created": selectionCreated,
-            "selection:updated": selectionUpdated,
-            "selection:cleared": selectionCleared,
-            // 'object:added': addedObject,
-            // 'object:removed': objectRemoved,
-            // 'object:moving': objectMoved,
-            // 'object:scaling': objectScaled,
-            // 'object:rotating': objectRotated,
-            // 'drop': objectDropped,
-            // 'mouse:move': mouseMove,
-            // 'mouse:down': mouseDown,
-            // 'mouse:up': mouseUp,
-            // 'after:render':createBoundingRect,
-            //'text:changed': adjustTextLine
-        });
-    };
-    const initializeFabricCanvas = () => {
-        let tempCanvas = new fabric.Canvas("editor-canvas", {
-            targetFindTolerance: 10,
-            selection: true,
-            preserveObjectStacking: true,
-            height: window.innerHeight * 0.6,
-            width: window.innerWidth/2 * 0.955,
-            backgroundColor: "white",
-        });
-
-        tempCanvas.on("object:added", function (o) {
-            o.target.setControlsVisibility({
-                bl: true,
-                br: true,
-                mb: false,
-                ml: false,
-                mr: false,
-                mt: false,
-                tl: true,
-                tr: true,
-                mtr: false,
-            });
-
-        });
-        initEvents(tempCanvas);
-        tempCanvas.renderAll();
-        window.canvas = tempCanvas;
-        // dispatch(setCanvas(tempCanvas));
-    }
-    useEffect(()=>{
-        // CANVAS INITIALIZED FOR THE FIRST TIME WHEN COMPONENT LOADS
-        initializeFabricCanvas()
-    },[]);
+    }, [moodBoards])
 
     const previousDesign = () => {
-        const index = designData.indexOf(selectedDesignData);
+        const index = moodBoards.findIndex(i => i.moodboard_id === selectedDesignData.id);
         if(index === 0){
-            setSelectedDesignData(designData[designData.length-1])
+            handleSelectedDesign(moodBoards[moodBoards.length-1])
         } else {
-            setSelectedDesignData(designData[index - 1])
+            handleSelectedDesign(moodBoards[index - 1])
         }
     }
 
     const nextDesign = () => {
-        const index = designData.indexOf(selectedDesignData);
-        if(index === designData.length-1){
-            setSelectedDesignData(designData[0])
+        const index = moodBoards.findIndex(i => i.moodboard_id === selectedDesignData.id);
+        if(index === moodBoards.length-1){
+            handleSelectedDesign(moodBoards[0])
         } else {
-            setSelectedDesignData(designData[index + 1])
+            handleSelectedDesign(moodBoards[index + 1])
         }
+    }
+
+    const toggleSwapPanel = (index) => {
+        // if(index === undefined || showSwapPanel === index){
+        //     setShowSwapPanel(null);
+        //     return;
+        // }
+        // setShowSwapPanel(index)
+    }
+
+    const swapImage = (src, index) => {
+        console.log('selected design...', selectedDesignData);
+        let data = [...selectedDesignData.placeHolders];
+        data[index] = {
+            ...data[index],
+            src
+        }
+        setSelectedDesignData({
+            ...selectedDesignData,
+            placeHolders: data
+        });
+        toggleSwapPanel(undefined);
     }
 
     return (
         <>
             <div className="pt-5" id="canvas-wrapper">
                 <div className="border-4 border-black rounded-2xl canvas-container flex flex-col justify-center overflow-hidden">
-                    <canvas id="editor-canvas" />
+                    {/*<canvas id="editor-canvas" />*/}
+                    <div className="relative" style={{width: window.innerWidth/2 * 0.955, height: window.innerHeight * 0.6}}>
+                        {selectedDesignData?.items?.map( (p, index) => {
+                            return (
+                                <>
+                                    <div className="absolute" style={{width: p.width, height: p.height, left: p.left, top: p.top}}>
+                                        <img src={p.src} width={p.width} height={p.height} onClick={() => toggleSwapPanel(index)} />
+                                        {showSwapPanel === index &&
+                                            <div
+                                                className="flex items-center justify-center relative border-2 border-black rounded-md p-2 ml-1 overflow-x-scroll"
+                                                 style={{ maxWidth: window.innerWidth/2 * 0.9, backgroundColor: 'white', zIndex: '9999', transform: 'translateY(-155px)'}}
+                                            >
+                                            {p.items?.map(e => {
+                                                return (
+                                                    <div className="flex flex-col justify-center items-center cursor-pointer">
+                                                        <div>
+                                                            <img src={e.image} width="100" onClick={() => swapImage(e.image, index)} />
+                                                        </div>
+                                                        <div>Price: ${e.price}</div>
+                                                    </div>
+                                                )
+                                            })}
+                                        </div>}
+                                    </div>
+                                </>
+                            )
+                        })}
+                    </div>
                     {/*<div className="flex justify-center items-center" style={{transform: 'translateY(75px)'}}>*/}
                     {/*    <div*/}
                     {/*        className="flex justify-center items-center rounded"*/}
@@ -211,7 +203,7 @@ export default function Manager(){
                     </button>
                 </div>
                 <div className="generate-btn p-2 flex items-center justify-between">
-                    <div>5,600 SAR</div>
+                    <div>{`${budget} ${currencyUnit}`}</div>
                     <button>
                         <img src={cartIcon} />
                     </button>
