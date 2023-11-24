@@ -61,18 +61,15 @@ export default function Manager( { layouts, moodBoards }){
         setCurrencyUnit(currency || "SAR");
         const matchLayout = layouts.find(e => e.moodboard_Template_ID === moodboard_Template_ID);
         const {items, mood_board_canvas} = matchLayout;
-        console.log('width/height', mood_board_canvas.width, mood_board_canvas.height);
-        const widthRatio = (window.innerWidth/2 * 0.955) / mood_board_canvas.width;
-        const heightRatio = (window.innerHeight * 0.6) / mood_board_canvas.height;
 
+        let mobileView = window.innerWidth < 639 ? 1 : 2;
+        const widthRatio = (window.innerWidth/mobileView * 0.955) / mood_board_canvas.width;
+        const heightRatio = (window.innerHeight * 0.6) / mood_board_canvas.height;
 
         let newData = [];
 
         for(let i=0;i<Items.length;i++){
-            // TODO: change this later
-            const ImageURL = "https://i.ibb.co/FsYTcCR/ccb16d0c012ed5f4-2602-w358-h358-b1-p0.png";
-            // const { category, ImageURL } = Items[i];
-            const { category } = Items[i];
+            const { category, ImageURL } = Items[i];
             const matchedData = items.find(e => e.category.toLowerCase() === category.toLowerCase())
             const { left, top } = matchedData;
             const {width, height} = await getScaleAndPosition(matchedData, ImageURL);
