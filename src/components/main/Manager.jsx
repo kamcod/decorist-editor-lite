@@ -12,6 +12,7 @@ import moodBoardData from "../../data";
 export default function Manager( { layouts, moodBoards }){
     // const dispatch = useDispatch();
     const [selectedDesignData, setSelectedDesignData] = useState({});
+    const [isMobileView, setIsMobileView] = useState(false);
     const [showSwapPanel, setShowSwapPanel] = useState();
     const [budget, setBudget] = useState("");
     const [currencyUnit, setCurrencyUnit] = useState("");
@@ -62,8 +63,10 @@ export default function Manager( { layouts, moodBoards }){
         const matchLayout = layouts.find(e => e.moodboard_Template_ID === moodboard_Template_ID);
         const {items, mood_board_canvas} = matchLayout;
 
-        let mobileView = window.innerWidth < 639 ? 1 : 2;
-        const widthRatio = (window.innerWidth/mobileView * 0.955) / mood_board_canvas.width;
+        let mobileView = window.innerWidth < 639;
+        setIsMobileView(mobileView);
+        const divideWidthBy = mobileView ? 1 : 2;
+        const widthRatio = ((window.innerWidth/divideWidthBy) * 0.955) / mood_board_canvas.width;
         const heightRatio = (window.innerHeight * 0.6) / mood_board_canvas.height;
 
         let newData = [];
@@ -140,7 +143,7 @@ export default function Manager( { layouts, moodBoards }){
             <div className="pt-5" id="canvas-wrapper">
                 <div className="border-4 border-black rounded-2xl canvas-container flex flex-col justify-center overflow-hidden">
                     {/*<canvas id="editor-canvas" />*/}
-                    <div className="relative" style={{width: window.innerWidth/2 * 0.955, height: window.innerHeight * 0.6}}>
+                    <div className="relative" style={{width: (window.innerWidth/(isMobileView ? 1 : 2)) * 0.955, height: window.innerHeight * 0.6}}>
                         {selectedDesignData?.items?.map( (p, index) => {
                             return (
                                 <>
