@@ -6,11 +6,13 @@ import bookmarkIcon from "../../assets/icons/bookmark.svg";
 import cartIcon from "../../assets/icons/cart.svg";
 
 import moodBoardData from "../../data";
+import PageLoader from "../common/PageLoader";
 
 // import {fabric} from "fabric";
 
 export default function Manager( { layouts, moodBoards }){
-    // const dispatch = useDispatch();
+    // const dispatch = useDispatch();\
+    const [isLoadingData, setIsLoadingData] = useState(false);
     const [selectedDesignData, setSelectedDesignData] = useState({});
     const [isMobileView, setIsMobileView] = useState(false);
     const [showSwapPanel, setShowSwapPanel] = useState();
@@ -57,6 +59,7 @@ export default function Manager( { layouts, moodBoards }){
     };
 
     const handleSelectedDesign = async (data) => {
+        setIsLoadingData(true);
         const { Items, moodboard_Template_ID, moodboard_id, total_price, currency } = data;
         setBudget(total_price);
         setCurrencyUnit(currency || "SAR");
@@ -84,6 +87,9 @@ export default function Manager( { layouts, moodBoards }){
                 src: ImageURL,
             };
             newData.push(obj);
+            if(i === Items.length - 1){
+                setIsLoadingData(false);
+            }
         };
 
         setSelectedDesignData({
@@ -144,31 +150,37 @@ export default function Manager( { layouts, moodBoards }){
                 <div className="border-4 border-black rounded-2xl canvas-container flex flex-col justify-center overflow-hidden">
                     {/*<canvas id="editor-canvas" />*/}
                     <div className="relative" style={{width: (window.innerWidth/(isMobileView ? 1 : 2)) * 0.955, height: window.innerHeight * 0.6}}>
-                        {selectedDesignData?.items?.map( (p, index) => {
-                            return (
-                                <>
-                                    <div className="absolute" style={{width: p.width, height: p.height, left: p.left, top: p.top}}>
-                                        <img src={p.src} width={p.width} height={p.height} onClick={() => toggleSwapPanel(index)} />
-                                        {showSwapPanel === index &&
-                                            <div
-                                                className="flex items-center justify-center relative border-2 border-black rounded-md p-2 ml-1 overflow-x-scroll"
-                                                 style={{ maxWidth: window.innerWidth/2 * 0.9, backgroundColor: 'white', zIndex: '9999', transform: 'translateY(-155px)'}}
-                                            >
-                                            {p.items?.map(e => {
-                                                return (
-                                                    <div className="flex flex-col justify-center items-center cursor-pointer">
-                                                        <div>
-                                                            <img src={e.image} width="100" onClick={() => swapImage(e.image, index)} />
-                                                        </div>
-                                                        <div>Price: ${e.price}</div>
-                                                    </div>
-                                                )
-                                            })}
-                                        </div>}
-                                    </div>
-                                </>
-                            )
-                        })}
+                        {isLoadingData ? (
+                            <PageLoader text="Loading Items..." />
+                        ) : (
+                            <>
+                                {selectedDesignData?.items?.map( (p, index) => {
+                                    return (
+                                        <>
+                                            <div className="absolute" style={{width: p.width, height: p.height, left: p.left, top: p.top}}>
+                                                <img src={p.src} width={p.width} height={p.height} onClick={() => toggleSwapPanel(index)} />
+                                                {showSwapPanel === index &&
+                                                    <div
+                                                        className="flex items-center justify-center relative border-2 border-black rounded-md p-2 ml-1 overflow-x-scroll"
+                                                        style={{ maxWidth: window.innerWidth/2 * 0.9, backgroundColor: 'white', zIndex: '9999', transform: 'translateY(-155px)'}}
+                                                    >
+                                                        {p.items?.map(e => {
+                                                            return (
+                                                                <div className="flex flex-col justify-center items-center cursor-pointer">
+                                                                    <div>
+                                                                        <img src={e.image} width="100" onClick={() => swapImage(e.image, index)} />
+                                                                    </div>
+                                                                    <div>Price: ${e.price}</div>
+                                                                </div>
+                                                            )
+                                                        })}
+                                                    </div>}
+                                            </div>
+                                        </>
+                                    )
+                                })}
+                            </>
+                        )}
                     </div>
                     {/*<div className="flex justify-center items-center" style={{transform: 'translateY(75px)'}}>*/}
                     {/*    <div*/}
@@ -195,10 +207,10 @@ export default function Manager( { layouts, moodBoards }){
                         </button>
                     </div>
                     <div className="grow"></div>
-                    <button className="generate-btn py-2 px-5" onClick={previousDesign}>
+                    <button className="generate-btn py-2 px-5" disabled={isLoadingData} onClick={previousDesign}>
                         Previous
                     </button>
-                    <button className="generate-btn py-2 px-8" onClick={nextDesign}>
+                    <button className="generate-btn py-2 px-8" disabled={isLoadingData} onClick={nextDesign}>
                         Next
                     </button>
                 </div>
