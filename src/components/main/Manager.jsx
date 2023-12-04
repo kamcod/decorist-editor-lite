@@ -63,7 +63,7 @@ export default function Manager( { layouts, moodBoards }){
         const { Items, moodboard_Template_ID, moodboard_id, total_price, currency } = data;
         setBudget(total_price);
         setCurrencyUnit(currency || "SAR");
-        const matchLayout = layouts.find(e => e.moodboard_Template_ID === moodboard_Template_ID);
+        const matchLayout = layouts.find(e => e.mood_Template_ID === moodboard_Template_ID);
         const {items, mood_board_canvas} = matchLayout;
 
         let mobileView = window.innerWidth < 639;
@@ -77,16 +77,18 @@ export default function Manager( { layouts, moodBoards }){
         for(let i=0;i<Items.length;i++){
             const { category, ImageURL } = Items[i];
             const matchedData = items.find(e => e.category.toLowerCase() === category.toLowerCase())
-            const { left, top } = matchedData;
-            const {width, height} = await getScaleAndPosition(matchedData, ImageURL);
-            let obj = {
-                width: width * widthRatio,
-                height: height * heightRatio,
-                left: left * widthRatio,
-                top: top * heightRatio,
-                src: ImageURL,
-            };
-            newData.push(obj);
+            if(matchedData){
+                const { left, top } = matchedData;
+                const {width, height} = await getScaleAndPosition(matchedData, ImageURL);
+                let obj = {
+                    width: width * widthRatio,
+                    height: height * heightRatio,
+                    left: left * widthRatio,
+                    top: top * heightRatio,
+                    src: ImageURL,
+                };
+                newData.push(obj);
+            }
             if(i === Items.length - 1){
                 setIsLoadingData(false);
             }
