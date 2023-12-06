@@ -74,12 +74,12 @@ export default function Manager( { layouts, moodBoards }){
 
         let newData = [];
 
-        for(let i=0;i<Items.length;i++){
-            const { category, ImageURL } = Items[i];
-            const matchedData = items.find(e => e.category.toLowerCase() === category.toLowerCase())
+        for(let i=0;i<items.length;i++){
+            const { category, left, top } = items[i];
+            const matchedData = Items.find(e => e.category.toLowerCase() === category.toLowerCase())
             if(matchedData){
-                const { left, top } = matchedData;
-                const {width, height} = await getScaleAndPosition(matchedData, ImageURL);
+                const { ImageURL } = matchedData;
+                const {width, height} = await getScaleAndPosition(items[i], ImageURL);
                 let obj = {
                     width: width * widthRatio,
                     height: height * heightRatio,
@@ -89,7 +89,7 @@ export default function Manager( { layouts, moodBoards }){
                 };
                 newData.push(obj);
             }
-            if(i === Items.length - 1){
+            if(i === items.length - 1){
                 setIsLoadingData(false);
             }
         };
