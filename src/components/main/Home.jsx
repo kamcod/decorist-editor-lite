@@ -6,13 +6,15 @@ import axios from "axios";
 import {EndPoints} from "../../Config/EndPoints";
 import {useState, useEffect} from "react";
 import ButtonLoader from "../common/ButtonLoader";
+import {useSelector} from "react-redux";
 
 export default function Home(){
-    const [loadingGeneratorBtn, setLoadingGeneratorBtn] = useState(false);
-    const [style, setStyle] = useState("bohemian");
-    const [color, setColor] = useState("1");
-    const [layouts, setLayouts] = useState([]);
-    const [moodBoards, setMoodBoards] = useState([]);
+    const { isMobileView }                                          = useSelector(state => state.project);
+    const [loadingGeneratorBtn, setLoadingGeneratorBtn]             = useState(false);
+    const [style, setStyle]                                         = useState("bohemian");
+    const [color, setColor]                                         = useState("1");
+    const [layouts, setLayouts]                                     = useState([]);
+    const [moodBoards, setMoodBoards]                               = useState([]);
 
     const handleStyleChange = (e) => {
         setStyle(e.target.value);
@@ -31,7 +33,7 @@ export default function Home(){
 
     return (
         <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-5">
+            <div className={`grid grid-cols-1 sm:grid-cols-2 gap-4 ${isMobileView ? 'p-1' : 'p-5'}`}>
                 <div>
                     <div className="flex justify-center items-center flex-col">
                         <img src={titleBack} />

@@ -7,18 +7,19 @@ import cartIcon from "../../assets/icons/cart.svg";
 
 import moodBoardData from "../../data";
 import PageLoader from "../common/PageLoader";
+import {useSelector} from "react-redux";
 
 // import {fabric} from "fabric";
 
 export default function Manager( { layouts, moodBoards }){
-    // const dispatch = useDispatch();\
-    const [isLoadingData, setIsLoadingData] = useState(false);
-    const [selectedDesignData, setSelectedDesignData] = useState({});
-    const [isMobileView, setIsMobileView] = useState(false);
-    const [showSwapPanel, setShowSwapPanel] = useState();
-    const [budget, setBudget] = useState("");
-    const [currencyUnit, setCurrencyUnit] = useState("");
+    const { isMobileView }                                          = useSelector(state => state.project);
+    const [isLoadingData, setIsLoadingData]                         = useState(false);
+    const [selectedDesignData, setSelectedDesignData]               = useState({});
+    const [showSwapPanel, setShowSwapPanel]                         = useState();
+    const [budget, setBudget]                                       = useState("");
+    const [currencyUnit, setCurrencyUnit]                           = useState("");
 
+    const DIMENSION = isMobileView ? 370 : 528;
 
     const getImageDimensions = (src) => {
         let data;
@@ -66,11 +67,7 @@ export default function Manager( { layouts, moodBoards }){
         const matchLayout = layouts.find(e => e.mood_Template_ID === moodboard_Template_ID);
         const {items, mood_board_canvas} = matchLayout;
 
-        let mobileView = window.innerWidth < 639;
-        setIsMobileView(mobileView);
-        const divideWidthBy = mobileView ? 1 : 2;
-        const widthRatio = ((window.innerWidth/divideWidthBy) * 0.955) / mood_board_canvas.width;
-        const heightRatio = (window.innerHeight * 0.6) / mood_board_canvas.height;
+        const ratio = DIMENSION / mood_board_canvas.width;
 
         let newData = [];
 
@@ -81,10 +78,10 @@ export default function Manager( { layouts, moodBoards }){
                 const { ImageURL } = matchedData;
                 const {width, height} = await getScaleAndPosition(items[i], ImageURL);
                 let obj = {
-                    width: width * widthRatio,
-                    height: height * heightRatio,
-                    left: left * widthRatio,
-                    top: top * heightRatio,
+                    width: width * ratio,
+                    height: height * ratio,
+                    left: left * ratio,
+                    top: top * ratio,
                     src: ImageURL,
                 };
                 newData.push(obj);
@@ -99,12 +96,6 @@ export default function Manager( { layouts, moodBoards }){
             items: newData
         })
     };
-
-    useEffect(() => {
-        if(moodBoards.length > 0){
-            handleSelectedDesign(moodBoards[0]);
-        }
-    }, [moodBoards])
 
     const previousDesign = () => {
         const index = moodBoards.findIndex(i => i.moodboard_id === selectedDesignData.id);
@@ -146,12 +137,18 @@ export default function Manager( { layouts, moodBoards }){
         toggleSwapPanel(undefined);
     }
 
+    useEffect(() => {
+        if(moodBoards.length > 0){
+            handleSelectedDesign(moodBoards[0]);
+        }
+    }, [moodBoards])
     return (
         <>
-            <div className="pt-5" id="canvas-wrapper">
-                <div className="border-4 border-black rounded-2xl canvas-container flex flex-col justify-center overflow-hidden">
-                    {/*<canvas id="editor-canvas" />*/}
-                    <div className="relative" style={{width: (window.innerWidth/(isMobileView ? 1 : 2)) * 0.955, height: window.innerHeight * 0.6}}>
+            <div className="pt-5 flex justify-end" id="canvas-wrapper">
+                <div style={{maxWidth: DIMENSION}}>
+                    <div
+                        style={{width: DIMENSION, height: DIMENSION}}
+                        className="border-4 border-black rounded-2xl canvas-container flex flex-col justify-center overflow-hidden">
                         {isLoadingData ? (
                             <PageLoader text="Loading Items..." />
                         ) : (
@@ -183,44 +180,47 @@ export default function Manager( { layouts, moodBoards }){
                                 })}
                             </>
                         )}
+                        {/*<div className="relative" style={{width: (window.innerWidth/(isMobileView ? 1 : 2)) * 0.955, height: window.innerHeight * 0.6}}>*/}
+
+                        {/*</div>*/}
+                        {/*<div className="flex justify-center items-center" style={{transform: 'translateY(75px)'}}>*/}
+                        {/*    <div*/}
+                        {/*        className="flex justify-center items-center rounded"*/}
+                        {/*        style={{backgroundColor: "#71CFBC", width: "308px", height: "67px"}}*/}
+                        {/*    >*/}
+                        {/*        <FormattedMessage id="budget" />: $3000*/}
+                        {/*    </div>*/}
+                        {/*</div>*/}
                     </div>
-                    {/*<div className="flex justify-center items-center" style={{transform: 'translateY(75px)'}}>*/}
-                    {/*    <div*/}
-                    {/*        className="flex justify-center items-center rounded"*/}
-                    {/*        style={{backgroundColor: "#71CFBC", width: "308px", height: "67px"}}*/}
-                    {/*    >*/}
-                    {/*        <FormattedMessage id="budget" />: $3000*/}
-                    {/*    </div>*/}
-                    {/*</div>*/}
-                </div>
-                <div className="flex gap-2 p-5">
-                    <div className="flex items-center gap-5">
-                        <button>
-                            <img src={dislikeIcon} />
+                    <div className="flex gap-2 p-5">
+                        <div className={`flex items-center ${isMobileView ? 'gap-2' : 'gap-5'}`}>
+                            <button>
+                                <img src={dislikeIcon} />
+                            </button>
+                            <button>
+                                <img src={heartIcon} />
+                            </button>
+                            <button>
+                                <img src={shareIcon} />
+                            </button>
+                            <button>
+                                <img src={bookmarkIcon} />
+                            </button>
+                        </div>
+                        <div className="grow"></div>
+                        <button className="generate-btn py-2 px-5" disabled={isLoadingData} onClick={previousDesign}>
+                            Previous
                         </button>
-                        <button>
-                            <img src={heartIcon} />
-                        </button>
-                        <button>
-                            <img src={shareIcon} />
-                        </button>
-                        <button>
-                            <img src={bookmarkIcon} />
+                        <button className="generate-btn py-2 px-8" disabled={isLoadingData} onClick={nextDesign}>
+                            Next
                         </button>
                     </div>
-                    <div className="grow"></div>
-                    <button className="generate-btn py-2 px-5" disabled={isLoadingData} onClick={previousDesign}>
-                        Previous
-                    </button>
-                    <button className="generate-btn py-2 px-8" disabled={isLoadingData} onClick={nextDesign}>
-                        Next
-                    </button>
-                </div>
-                <div className="generate-btn p-2 flex items-center justify-between">
-                    <div>{`${budget} ${currencyUnit}`}</div>
-                    <button>
-                        <img src={cartIcon} />
-                    </button>
+                    <div className="generate-btn p-2 flex items-center justify-between">
+                        <div>{`${budget} ${currencyUnit}`}</div>
+                        <button>
+                            <img src={cartIcon} />
+                        </button>
+                    </div>
                 </div>
             </div>
         </>

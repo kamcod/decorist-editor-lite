@@ -10,3 +10,9 @@
     background-color: #313149;
     color: white;
 }
+
+@media only screen and (max-width: 600px) {
+    .mood-board-editor-lite .home-inputs-dropdown {
+        min-width: 155px;
+    }
+}
