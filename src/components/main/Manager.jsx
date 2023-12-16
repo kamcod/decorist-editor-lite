@@ -148,7 +148,7 @@ export default function Manager( { layouts, moodBoards }){
                 <div style={{maxWidth: DIMENSION}}>
                     <div
                         style={{width: DIMENSION, height: DIMENSION}}
-                        className="border-4 border-black rounded-2xl canvas-container flex flex-col justify-center overflow-hidden">
+                        className="relative border-4 border-black rounded-2xl canvas-container flex flex-col justify-center overflow-hidden">
                         {isLoadingData ? (
                             <PageLoader text="Loading Items..." />
                         ) : (
