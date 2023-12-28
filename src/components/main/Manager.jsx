@@ -8,6 +8,8 @@ import cartIcon from "../../assets/icons/cart.svg";
 import moodBoardData from "../../data";
 import PageLoader from "../common/PageLoader";
 import {useSelector} from "react-redux";
+import axios from "axios";
+import {EndPoints} from "../../Config/EndPoints";
 
 // import {fabric} from "fabric";
 
@@ -16,10 +18,15 @@ export default function Manager( { layouts, moodBoards }){
     const [isLoadingData, setIsLoadingData]                         = useState(false);
     const [selectedDesignData, setSelectedDesignData]               = useState({});
     const [showSwapPanel, setShowSwapPanel]                         = useState();
+    const [swapItemsList, setSwapItemsList]                         = useState();
+    const [current, setCurrent]                                     = useState(1);
     const [budget, setBudget]                                       = useState("");
     const [currencyUnit, setCurrencyUnit]                           = useState("");
 
     const DIMENSION = isMobileView ? 370 : 528;
+    const LIMIT = 5;
+    const PAGES = Math.floor(swapItemsList?.length / LIMIT);
+    const swapItemsPerPage = swapItemsList?.slice((current - 1) * LIMIT, current * LIMIT);
 
     const getImageDimensions = (src) => {
         let data;
@@ -45,9 +52,7 @@ export default function Manager( { layouts, moodBoards }){
                 const imgWidth = imgObj.width, imgHeight = imgObj.height;
                 const scaleToWidth = (placeHolderWidth - placeHolderStroke)/imgWidth;
                 const scaleToHeight = (placeHolderHeight - placeHolderStroke)/imgHeight;
-                let scale = scaleToWidth*imgHeight <= (placeHolderHeight - placeHolderStroke) ? scaleToWidth : scaleToHeight;
-                // if(value === 'width') return (scale * imgWidth).toString();
-                // if(value === 'height') return (scale * imgHeight).toString();
+                let scale = scaleToWidth * imgHeight <= (placeHolderHeight - placeHolderStroke) ? scaleToWidth : scaleToHeight;
                 resolve({
                     scale,
                     left: left + placeHolderStroke,
@@ -60,6 +65,7 @@ export default function Manager( { layouts, moodBoards }){
     };
 
     const handleSelectedDesign = async (data) => {
+        console.log('DATA00000000', data);
         setIsLoadingData(true);
         const { Items, moodboard_Template_ID, moodboard_id, total_price, currency } = data;
         setBudget(total_price);
@@ -75,9 +81,10 @@ export default function Manager( { layouts, moodBoards }){
             const { category, left, top } = items[i];
             const matchedData = Items.find(e => e.category.toLowerCase() === category.toLowerCase())
             if(matchedData){
-                const { ImageURL } = matchedData;
+                const { ImageURL, product_id, price, category } = matchedData;
                 const {width, height} = await getScaleAndPosition(items[i], ImageURL);
                 let obj = {
+                    id: product_id, price, category,
                     width: width * ratio,
                     height: height * ratio,
                     left: left * ratio,
@@ -115,25 +122,35 @@ export default function Manager( { layouts, moodBoards }){
         }
     }
 
-    const toggleSwapPanel = (index) => {
-        // if(index === undefined || showSwapPanel === index){
-        //     setShowSwapPanel(null);
-        //     return;
-        // }
-        // setShowSwapPanel(index)
+    const getSwapItemsList = (id) => {
+        axios.get(`${EndPoints.getSwapItems}?item_id=${id}&category=chair&style=New Classic`)
+            .then(res => {
+                console.log('resi', res);
+                console.log('swap item list', res.data.similarProducts);
+                console.log('swap item list[101]', res.data.similarProducts[101]);
+                setSwapItemsList(res.data.similarProducts);
+
+            })
+    }
+    const toggleSwapPanel = (index, id) => {
+        if(index === undefined || showSwapPanel === index){
+            setShowSwapPanel(null);
+            setSwapItemsList(null);
+            return;
+        }
+
+        getSwapItemsList(id);
+        setShowSwapPanel(index)
     }
 
     const swapImage = (src, index) => {
         console.log('selected design...', selectedDesignData);
-        let data = [...selectedDesignData.placeHolders];
-        data[index] = {
-            ...data[index],
+        let data = {...selectedDesignData};
+        data.items[index] = {
+            ...data.items[index],
             src
         }
-        setSelectedDesignData({
-            ...selectedDesignData,
-            placeHolders: data
-        });
+        setSelectedDesignData(data);
         toggleSwapPanel(undefined);
     }
 
@@ -153,29 +170,27 @@ export default function Manager( { layouts, moodBoards }){
                             <PageLoader text="Loading Items..." />
                         ) : (
                             <>
-                                {selectedDesignData?.items?.map( (p, index) => {
+                                {selectedDesignData?.items?.map( ({id, width, height, left, top, src, items}, index) => {
                                     return (
-                                        <>
-                                            <div className="absolute" style={{width: p.width, height: p.height, left: p.left, top: p.top}}>
-                                                <img src={p.src} width={p.width} height={p.height} onClick={() => toggleSwapPanel(index)} />
-                                                {showSwapPanel === index &&
-                                                    <div
-                                                        className="flex items-center justify-center relative border-2 border-black rounded-md p-2 ml-1 overflow-x-scroll"
-                                                        style={{ maxWidth: window.innerWidth/2 * 0.9, backgroundColor: 'white', zIndex: '9999', transform: 'translateY(-155px)'}}
-                                                    >
-                                                        {p.items?.map(e => {
-                                                            return (
-                                                                <div className="flex flex-col justify-center items-center cursor-pointer">
-                                                                    <div>
-                                                                        <img src={e.image} width="100" onClick={() => swapImage(e.image, index)} />
-                                                                    </div>
-                                                                    <div>Price: ${e.price}</div>
+                                        <div key={id} className="absolute" style={{width, height, left, top}}>
+                                            <img src={src} width={width} height={height} onClick={() => toggleSwapPanel(index, id)} />
+                                            {showSwapPanel === index &&
+                                                <div
+                                                    className="flex items-center justify-center relative border-2 border-black rounded-md p-2 ml-1 overflow-x-scroll"
+                                                    style={{ maxWidth: DIMENSION * 0.9, width: DIMENSION * 0.8, backgroundColor: 'white', zIndex: '9999', transform: 'translateY(-155px)'}}
+                                                >
+                                                    {swapItemsPerPage ? swapItemsPerPage?.map(({ ImageURL, price}) => {
+                                                        return (
+                                                            <div className="flex flex-col justify-center items-center cursor-pointer">
+                                                                <div>
+                                                                    <img src={ImageURL} width="100" onClick={() => swapImage(ImageURL, index)} />
                                                                 </div>
-                                                            )
-                                                        })}
-                                                    </div>}
-                                            </div>
-                                        </>
+                                                                <div>Price: ${price}</div>
+                                                            </div>
+                                                        )
+                                                    }) : <></>}
+                                                </div>}
+                                        </div>
                                     )
                                 })}
                             </>
