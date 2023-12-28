@@ -4,6 +4,8 @@ import heartIcon from "../../assets/icons/heart.svg";
 import shareIcon from "../../assets/icons/arrow-share.svg";
 import bookmarkIcon from "../../assets/icons/bookmark.svg";
 import cartIcon from "../../assets/icons/cart.svg";
+import leftArrow from "../../assets/icons/left-arrow.svg";
+import rightArrow from "../../assets/icons/right-arrow.svg";
 
 import moodBoardData from "../../data";
 import PageLoader from "../common/PageLoader";
@@ -24,7 +26,7 @@ export default function Manager( { layouts, moodBoards }){
     const [currencyUnit, setCurrencyUnit]                           = useState("");
 
     const DIMENSION = isMobileView ? 370 : 528;
-    const LIMIT = 5;
+    const LIMIT = 3;
     const PAGES = Math.floor(swapItemsList?.length / LIMIT);
     const swapItemsPerPage = swapItemsList?.slice((current - 1) * LIMIT, current * LIMIT);
 
@@ -81,10 +83,10 @@ export default function Manager( { layouts, moodBoards }){
             const { category, left, top } = items[i];
             const matchedData = Items.find(e => e.category.toLowerCase() === category.toLowerCase())
             if(matchedData){
-                const { ImageURL, product_id, price, category } = matchedData;
+                const { ImageURL, id, price, category } = matchedData;
                 const {width, height} = await getScaleAndPosition(items[i], ImageURL);
                 let obj = {
-                    id: product_id, price, category,
+                    id, price, category,
                     width: width * ratio,
                     height: height * ratio,
                     left: left * ratio,
@@ -123,15 +125,11 @@ export default function Manager( { layouts, moodBoards }){
     }
 
     const getSwapItemsList = (id) => {
-        axios.get(`${EndPoints.getSwapItems}?item_id=${id}&category=chair&style=New Classic`)
-            .then(res => {
-                console.log('resi', res);
-                console.log('swap item list', res.data.similarProducts);
-                console.log('swap item list[101]', res.data.similarProducts[101]);
-                setSwapItemsList(res.data.similarProducts);
-
-            })
+        axios.get(`${EndPoints.getSwapItems}?item_id=${id}&category=chair&style=New Classic&size=30`)
+            .then(res => setSwapItemsList(res.data.similarProducts))
+            .catch(err => console.log(err))
     }
+
     const toggleSwapPanel = (index, id) => {
         if(index === undefined || showSwapPanel === index){
             setShowSwapPanel(null);
@@ -154,11 +152,26 @@ export default function Manager( { layouts, moodBoards }){
         toggleSwapPanel(undefined);
     }
 
+    const onPreviousItems = () => {
+        if(current === 1) return;
+        setCurrent(c => c-1);
+    };
+
+    const onNextItems = () => {
+        if(current === PAGES) return;
+        setCurrent(c => c+1);
+    };
+
+    const getSwapListStyle = () => {
+        return { maxWidth: DIMENSION * 0.9, width: DIMENSION * 0.8, backgroundColor: '#F3F3F3', zIndex: '9999', transform: 'translateY(-155px)', border: '1px solid #71CFBC'}
+    }
+
     useEffect(() => {
         if(moodBoards.length > 0){
             handleSelectedDesign(moodBoards[0]);
         }
-    }, [moodBoards])
+    }, [moodBoards]);
+
     return (
         <>
             <div className="pt-5 flex justify-end" id="canvas-wrapper">
@@ -176,9 +189,13 @@ export default function Manager( { layouts, moodBoards }){
                                             <img src={src} width={width} height={height} onClick={() => toggleSwapPanel(index, id)} />
                                             {showSwapPanel === index &&
                                                 <div
-                                                    className="flex items-center justify-center relative border-2 border-black rounded-md p-2 ml-1 overflow-x-scroll"
-                                                    style={{ maxWidth: DIMENSION * 0.9, width: DIMENSION * 0.8, backgroundColor: 'white', zIndex: '9999', transform: 'translateY(-155px)'}}
+                                                    className="flex items-center gap-2 justify-center relative border-2 rounded-md p-2 ml-1 overflow-x-scroll"
+                                                    style={getSwapListStyle}
                                                 >
+                                                    <button disabled={current === 1}>
+                                                        <img src={leftArrow} onClick={onPreviousItems} />
+                                                    </button>
+
                                                     {swapItemsPerPage ? swapItemsPerPage?.map(({ ImageURL, price}) => {
                                                         return (
                                                             <div className="flex flex-col justify-center items-center cursor-pointer">
@@ -189,6 +206,10 @@ export default function Manager( { layouts, moodBoards }){
                                                             </div>
                                                         )
                                                     }) : <></>}
+
+                                                    <button disabled={current === PAGES}>
+                                                        <img src={rightArrow} onClick={onNextItems} />
+                                                    </button>
                                                 </div>}
                                         </div>
                                     )
