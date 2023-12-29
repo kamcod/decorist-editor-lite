@@ -1,4 +1,4 @@
-import {useEffect, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import dislikeIcon from "../../assets/icons/dislike.svg";
 import heartIcon from "../../assets/icons/heart.svg";
 import shareIcon from "../../assets/icons/arrow-share.svg";
@@ -16,6 +16,7 @@ import {EndPoints} from "../../Config/EndPoints";
 // import {fabric} from "fabric";
 
 export default function Manager( { layouts, moodBoards }){
+    const swapItemsRef                                              = useRef();
     const { isMobileView }                                          = useSelector(state => state.project);
     const [isLoadingData, setIsLoadingData]                         = useState(false);
     const [selectedDesignData, setSelectedDesignData]               = useState({});
@@ -86,12 +87,11 @@ export default function Manager( { layouts, moodBoards }){
                 const { ImageURL, id, price, category } = matchedData;
                 const {width, height} = await getScaleAndPosition(items[i], ImageURL);
                 let obj = {
-                    id, price, category,
+                    ...matchedData,
                     width: width * ratio,
                     height: height * ratio,
                     left: left * ratio,
                     top: top * ratio,
-                    src: ImageURL,
                 };
                 newData.push(obj);
             }
@@ -124,21 +124,22 @@ export default function Manager( { layouts, moodBoards }){
         }
     }
 
-    const getSwapItemsList = (id) => {
-        axios.get(`${EndPoints.getSwapItems}?item_id=${id}&category=chair&style=New Classic&size=30`)
+    const getSwapItemsList = (id, category) => {
+        axios.get(`${EndPoints.getSwapItems}?item_id=${id}&category=${category}&style=New Classic&size=30`)
             .then(res => setSwapItemsList(res.data.similarProducts))
             .catch(err => console.log(err))
     }
 
-    const toggleSwapPanel = (index, id) => {
+    const toggleSwapPanel = (id, index, category) => {
         if(index === undefined || showSwapPanel === index){
             setShowSwapPanel(null);
             setSwapItemsList(null);
             return;
         }
 
-        getSwapItemsList(id);
+
         setShowSwapPanel(index)
+        getSwapItemsList(id, category);
     }
 
     const swapImage = (src, index) => {
@@ -146,7 +147,7 @@ export default function Manager( { layouts, moodBoards }){
         let data = {...selectedDesignData};
         data.items[index] = {
             ...data.items[index],
-            src
+            ImageURL: src
         }
         setSelectedDesignData(data);
         toggleSwapPanel(undefined);
@@ -162,8 +163,29 @@ export default function Manager( { layouts, moodBoards }){
         setCurrent(c => c+1);
     };
 
-    const getSwapListStyle = () => {
-        return { maxWidth: DIMENSION * 0.9, width: DIMENSION * 0.8, backgroundColor: '#F3F3F3', zIndex: '9999', transform: 'translateY(-155px)', border: '1px solid #71CFBC'}
+    const getSwapListStyle = (left, top, height) => {
+        let pos = { left: 0, top: 0};
+        const offset = 20;
+        if(swapItemsRef.current){
+            const { clientHeight, clientWidth } = swapItemsRef.current;
+            if(clientWidth + left > DIMENSION){
+                pos = {...pos, left: DIMENSION - left - clientWidth - offset}
+            }
+            if(clientHeight + top + height > DIMENSION){
+                pos = {...pos, top: DIMENSION - top - height - clientHeight - offset}
+            }
+        }
+
+        return {
+            maxWidth: DIMENSION * 0.9,
+            width: DIMENSION * 0.8,
+            left: pos.left,
+            top: pos.top,
+            backgroundColor: '#F3F3F3',
+            zIndex: '9999',
+            transform: 'translateY(-155px)',
+            border: '1px solid #71CFBC'
+        }
     }
 
     useEffect(() => {
@@ -183,14 +205,15 @@ export default function Manager( { layouts, moodBoards }){
                             <PageLoader text="Loading Items..." />
                         ) : (
                             <>
-                                {selectedDesignData?.items?.map( ({id, width, height, left, top, src, items}, index) => {
+                                {selectedDesignData?.items?.map( ({id, width, height, left, top, ImageURL, category, items}, index) => {
                                     return (
                                         <div key={id} className="absolute" style={{width, height, left, top}}>
-                                            <img src={src} width={width} height={height} onClick={() => toggleSwapPanel(index, id)} />
+                                            <img src={ImageURL} width={width} height={height} onClick={(event) => toggleSwapPanel(id, index, category)} />
                                             {showSwapPanel === index &&
                                                 <div
+                                                    ref={swapItemsRef}
                                                     className="flex items-center gap-2 justify-center relative border-2 rounded-md p-2 ml-1 overflow-x-scroll"
-                                                    style={getSwapListStyle}
+                                                    style={getSwapListStyle(left, top, height)}
                                                 >
                                                     <button disabled={current === 1}>
                                                         <img src={leftArrow} onClick={onPreviousItems} />

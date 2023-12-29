@@ -11,6 +11,7 @@ import {useSelector} from "react-redux";
 export default function Home(){
     const { isMobileView }                                          = useSelector(state => state.project);
     const [loadingGeneratorBtn, setLoadingGeneratorBtn]             = useState(false);
+    const [showErrorMsg, setShowErrorMsg]                           = useState(false);
     const [style, setStyle]                                         = useState("bohemian");
     const [color, setColor]                                         = useState("1");
     const [layouts, setLayouts]                                     = useState([]);
@@ -20,6 +21,7 @@ export default function Home(){
         setStyle(e.target.value);
     }
     const generateArtwork = () => {
+        setShowErrorMsg(false);
         setLoadingGeneratorBtn(true);
         axios.get(`${EndPoints.generateArtwork}?style=${style}&color=${color}&user_id=1`)
             .then(res => {
@@ -28,7 +30,11 @@ export default function Home(){
                 setLayouts(layout);
                 setMoodBoards(moodboards);
             })
-            .catch(err => console.log(err))
+            .catch(err => {
+                console.log(err)
+                setLoadingGeneratorBtn(false);
+                setShowErrorMsg(true);
+            })
     }
 
     return (
@@ -65,12 +71,13 @@ export default function Home(){
                                 <option value="5">Color 5</option>
                             </select>
                         </div>
-                        <div className="py-16 w-1/2">
+                        <div className="flex items-center flex-col py-16 w-1/2">
                             <button className="generate-btn w-full py-4 bg-indigo-500"
                             onClick={generateArtwork}
                             >
                                 {loadingGeneratorBtn ? <ButtonLoader text="Generating..." /> : "Generate"}
                             </button>
+                            {showErrorMsg && <span style={{color: 'red'}}>Something went wrong! Please try again</span>}
                         </div>
                     </div>
                 </div>
