@@ -84,7 +84,7 @@ export default function Manager( { layouts, moodBoards }){
             const { category, left, top } = items[i];
             const matchedData = Items.find(e => e.category.toLowerCase() === category.toLowerCase())
             if(matchedData){
-                const { ImageURL, id, price, category } = matchedData;
+                const { ImageURL } = matchedData;
                 const {width, height} = await getScaleAndPosition(items[i], ImageURL);
                 let obj = {
                     ...matchedData,
@@ -142,14 +142,21 @@ export default function Manager( { layouts, moodBoards }){
         getSwapItemsList(id, category);
     }
 
-    const swapImage = (src, index) => {
+    const calculateTotalPrice = (data) => {
+        const total = data.reduce((acc, currentValue) => acc + Number(currentValue.Price), 0);
+        setBudget(total);
+    };
+
+    const swapImage = (ImageURL, Price, index) => {
         console.log('selected design...', selectedDesignData);
         let data = {...selectedDesignData};
         data.items[index] = {
             ...data.items[index],
-            ImageURL: src
+            ImageURL,
+            Price
         }
         setSelectedDesignData(data);
+        calculateTotalPrice(data.items);
         toggleSwapPanel(undefined);
     }
 
@@ -183,9 +190,9 @@ export default function Manager( { layouts, moodBoards }){
             top: pos.top,
             backgroundColor: '#F3F3F3',
             zIndex: '9999',
-            transform: 'translateY(-155px)',
+            transform: `translateY(${-height/2}px)`,
             border: '1px solid #71CFBC'
-        }
+        };
     }
 
     useEffect(() => {
@@ -196,7 +203,7 @@ export default function Manager( { layouts, moodBoards }){
 
     return (
         <>
-            <div className="pt-5 flex justify-end" id="canvas-wrapper">
+            <div className="pt-5 flex justify-center" id="canvas-wrapper">
                 <div style={{maxWidth: DIMENSION}}>
                     <div
                         style={{width: DIMENSION, height: DIMENSION}}
@@ -219,13 +226,13 @@ export default function Manager( { layouts, moodBoards }){
                                                         <img src={leftArrow} onClick={onPreviousItems} />
                                                     </button>
 
-                                                    {swapItemsPerPage ? swapItemsPerPage?.map(({ ImageURL, price}) => {
+                                                    {swapItemsPerPage ? swapItemsPerPage?.map(({ ImageURL, Price}) => {
                                                         return (
                                                             <div className="flex flex-col justify-center items-center cursor-pointer">
                                                                 <div>
-                                                                    <img src={ImageURL} width="100" onClick={() => swapImage(ImageURL, index)} />
+                                                                    <img src={ImageURL} width="100" onClick={() => swapImage(ImageURL, Price, index)} />
                                                                 </div>
-                                                                <div>Price: ${price}</div>
+                                                                <div>Price: ${Price}</div>
                                                             </div>
                                                         )
                                                     }) : <></>}
@@ -251,7 +258,7 @@ export default function Manager( { layouts, moodBoards }){
                         {/*    </div>*/}
                         {/*</div>*/}
                     </div>
-                    <div className="flex gap-2 p-5">
+                    <div className="flex gap-2 py-5">
                         <div className={`flex items-center ${isMobileView ? 'gap-2' : 'gap-5'}`}>
                             <button>
                                 <img src={dislikeIcon} />
