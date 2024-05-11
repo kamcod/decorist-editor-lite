@@ -4,14 +4,15 @@ import heartIcon from "../../assets/icons/heart.svg";
 import shareIcon from "../../assets/icons/arrow-share.svg";
 import bookmarkIcon from "../../assets/icons/bookmark.svg";
 import cartIcon from "../../assets/icons/cart.svg";
-import leftArrow from "../../assets/icons/left-arrow.svg";
-import rightArrow from "../../assets/icons/right-arrow.svg";
+import leftArrow from "../../assets/icons/left-arrow1.svg";
+import rightArrow from "../../assets/icons/right-arrow1.svg";
 
 import moodBoardData from "../../data";
+import cls from "./manager.module.css";
 import PageLoader from "../common/PageLoader";
 import {useSelector} from "react-redux";
 import axios from "axios";
-import {EndPoints} from "../../Config/EndPoints";
+import {EndPoints} from "../../config/EndPoints";
 
 // import {fabric} from "fabric";
 
@@ -70,7 +71,7 @@ export default function Manager( { layouts, moodBoards }){
     const handleSelectedDesign = async (data) => {
         console.log('DATA00000000', data);
         setIsLoadingData(true);
-        const { Items, moodboard_Template_ID, moodboard_id, total_price, currency } = data;
+        const { Items, moodboard_Template_ID, moodboard_id, design_id, total_price, currency } = data;
         setBudget(total_price);
         setCurrencyUnit(currency || "SAR");
         const matchLayout = layouts.find(e => e.mood_Template_ID === moodboard_Template_ID);
@@ -102,6 +103,7 @@ export default function Manager( { layouts, moodBoards }){
 
         setSelectedDesignData({
             id: moodboard_id,
+            designId: design_id,
             items: newData
         })
     };
@@ -125,7 +127,7 @@ export default function Manager( { layouts, moodBoards }){
     }
 
     const getSwapItemsList = (id, category) => {
-        axios.get(`${EndPoints.getSwapItems}?item_id=${id}&category=${category}&style=New Classic&size=30`)
+        axios.get(`${EndPoints.getSwapItems}?item_id=${id}&design_id=${selectedDesignData.designId}`)
             .then(res => setSwapItemsList(res.data.similarProducts))
             .catch(err => console.log(err))
     }
@@ -188,10 +190,7 @@ export default function Manager( { layouts, moodBoards }){
             width: DIMENSION * 0.8,
             left: pos.left,
             top: pos.top,
-            backgroundColor: '#F3F3F3',
-            zIndex: '9999',
             transform: `translateY(${-height/2}px)`,
-            border: '1px solid #71CFBC'
         };
     }
 
@@ -207,7 +206,7 @@ export default function Manager( { layouts, moodBoards }){
                 <div style={{maxWidth: DIMENSION}}>
                     <div
                         style={{width: DIMENSION, height: DIMENSION}}
-                        className="relative border-4 border-black rounded-2xl canvas-container flex flex-col justify-center overflow-hidden">
+                        className="relative border-2 border-black rounded-2xl canvas-container flex flex-col justify-center overflow-hidden">
                         {isLoadingData ? (
                             <PageLoader text="Loading Items..." />
                         ) : (
@@ -219,7 +218,7 @@ export default function Manager( { layouts, moodBoards }){
                                             {showSwapPanel === index &&
                                                 <div
                                                     ref={swapItemsRef}
-                                                    className="flex items-center gap-2 justify-center relative border-2 rounded-md p-2 ml-1 overflow-x-scroll"
+                                                    className={`${cls.swap_items_popup} flex items-center gap-2 justify-center relative border-2 rounded-md p-2 ml-1 overflow-x-auto`}
                                                     style={getSwapListStyle(left, top, height)}
                                                 >
                                                     <button disabled={current === 1}>
@@ -274,18 +273,26 @@ export default function Manager( { layouts, moodBoards }){
                             </button>
                         </div>
                         <div className="grow"></div>
-                        <button className="generate-btn py-2 px-5" disabled={isLoadingData} onClick={previousDesign}>
+                        <button className="primary-btn py-2 px-5" disabled={isLoadingData} onClick={previousDesign}>
                             Previous
                         </button>
-                        <button className="generate-btn py-2 px-8" disabled={isLoadingData} onClick={nextDesign}>
+                        <button className="primary-btn py-2 px-8" disabled={isLoadingData} onClick={nextDesign}>
                             Next
                         </button>
                     </div>
-                    <div className="generate-btn p-2 flex items-center justify-between">
-                        <div>{`${budget} ${currencyUnit}`}</div>
-                        <button>
-                            <img src={cartIcon} />
-                        </button>
+                    <div className="p-2 flex items-center justify-between text-sm rounded-md" style={{backgroundColor: '#313149', color: 'white'}}>
+                        <div className="flex item-center gap-1 fo">
+                            <button>
+                                <img src={cartIcon} />
+                            </button>
+                            Add to cart
+                        </div>
+                        <div>
+                            {`${budget} ${currencyUnit}`}
+                        </div>
+                    </div>
+                    <div className="text-sm px-3 py-1">
+                        You can remove or change item Quantity from cart
                     </div>
                 </div>
             </div>

@@ -1,0 +1,17 @@
+.room_types_grid {
+    background: #E5E7EB;
+    border-radius: 20px;
+    font-size: 12px;
+    color: black;
+}
+.room_types_selected_grid {
+    background: #313149;
+    color: white;
+}
+.generate_btn_style{
+    /*padding: 8px 15px;*/
+    background-color: #313149;
+    color: white;
+    border-bottom-left-radius: 50px;
+    border-top-right-radius: 50px;
+}
